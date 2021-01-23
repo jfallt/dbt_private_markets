@@ -1,5 +1,16 @@
 version: 2
 
 models:
-  - name: test
-    description: One record per customer
+  - name: portfolios
+    columns:
+      -name:
+       tests:
+        - unique
+        - not null
+  - name: gpfunds
+  - name: entities
+    columns:
+      -name: EntityGUID
+       tests:
+        - unique
+        - not null
