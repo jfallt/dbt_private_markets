@@ -6,6 +6,7 @@ SELECT DISTINCT HASHBYTES('MD5', [OrgGUID]) AS GPFundID
 	,[FundName] AS ServiceProviderName
 	,[OrgGUID]
 	,[FundLocalCurrency] AS LocalCurrencyCode
+	,[FundSizeLocal]
 	,CONVERT(BIT, 0) AS Exclude
 	,CONVERT(BIT, 0) AS SideFund
 	,[Geography]
