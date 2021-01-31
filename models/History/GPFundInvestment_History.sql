@@ -5,15 +5,14 @@ SELECT DISTINCT p.PeriodId
 	,e.EntityId
 	,u.CurrentStatus AS [Status]
 	,CAST(u.MarketValueDate AS DATE) AS MarketValueDate
-	,CONVERT(money, u.MarketValueLocal) as MarketValueLocal
-	,CONVERT(money,u.TotalProceedsLocal) as TotalProceedsLocal
-	,CONVERT(money,u.TotalCostLocal) as TotalCostLocal
-	,CONVERT(money,u.RemainingCostLocal) as RemainingCostLocal
+	,CONVERT(MONEY, u.MarketValueLocal) AS MarketValueLocal
+	,CONVERT(MONEY, u.TotalProceedsLocal) AS TotalProceedsLocal
+	,CONVERT(MONEY, u.TotalCostLocal) AS TotalCostLocal
+	,CONVERT(MONEY, u.RemainingCostLocal) AS RemainingCostLocal
 FROM [ETL].[CompanyReport] AS u
-INNER JOIN [dbo].[Period] p on p.AsOfDate = u.ReportDateRange
-LEFT JOIN [dbo].[GPFund] AS f ON f.OrgGuid = u.OrganizationGUID
-LEFT JOIN [dbo].[Entity] AS e ON e.EntityGuid = u.EntityGuid
-LEFT JOIN [dbo].[GPFundInvestment] AS i
-ON i.EntityId = e.EntityId
-	and i.GPFundid = f.GPFundid
+INNER JOIN {{ref('Period')}} p ON p.AsOfDate = u.ReportDateRange
+LEFT JOIN {{ref('GPFund')}} AS f ON f.OrgGuid = u.OrganizationGUID
+LEFT JOIN {{ref('Entity')}} AS e ON e.EntityGuid = u.EntityGuid
+LEFT JOIN {{ref('GPFundInvestment')}} AS i ON i.EntityId = e.EntityId
+	AND i.GPFundid = f.GPFundid
 WHERE u.EntityGUID IS NOT NULL

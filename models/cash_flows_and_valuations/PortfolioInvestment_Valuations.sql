@@ -1,13 +1,17 @@
 {{ config(materialized='table') }}
 
 -- Treat records with a non zero valuation OR all Zeros (valuations and cash flows) as valuations
-select p.PortfolioInvestmentId
-	, mr.CashFlowValuationDate
-	,mr.ReportedValuationLocal
-from [ETL].[ManagerReport] mr
-inner join dbo.PortfolioInvestment p on p.[InvestmentGUID] = mr.[InvestmentGUID]
-WHERE mr.OrganizationType = 'Fund Of Funds'
-	AND mr.ReportedValuationLocal <> 0
+WITH portfolioInvestmentValuations
+AS (
+	SELECT p.PortfolioInvestmentId
+		,p.GPFundID
+		,p.PortfolioID
+		,mr.CashFlowValuationDate AS ValuationDate
+		,CONVERT(MONEY, mr.ReportedValuationLocal) AS ReportedValuationLocal
+	FROM [ETL].[ManagerReport] mr
+	INNER JOIN {{ref('PortfolioInvestment')}}  p ON p.[InvestmentGUID] = mr.[InvestmentGUID]
+	WHERE mr.OrganizationType = 'Partnership'
+		AND mr.ReportedValuationLocal <> 0
 		OR (
 			mr.ReportedValuationLocal = 0
 			AND mr.FundingClient = 0
@@ -20,4 +24,22 @@ WHERE mr.OrganizationType = 'Fund Of Funds'
 			AND mr.AmountRecallableClient = 0
 			AND mr.AmountRecallableLocal = 0
 			AND mr.StockDistributionsLocal = 0
-		)
+			)
+	)
+-- Convert local currencies to client according to portfolios local currency code
+SELECT piv.PortfolioInvestmentID
+	,piv.ValuationDate
+	,piv.ReportedValuationLocal
+	,CONVERT(MONEY, piv.ReportedValuationLocal / ComputedValues.FxRate) AS ReportedValuationClient
+	,CASE 
+		WHEN prd.periodid IS NULL
+			THEN CONVERT(BIT, 0)
+		ELSE CONVERT(BIT, 1)
+		END AS IsReportingPeriod
+FROM portfolioInvestmentValuations piv
+INNER JOIN dbo.GPFund gpf ON gpf.GPFundID = piv.GPFundID
+INNER JOIN dbo.Portfolio p ON p.PortfolioID = piv.PortfolioID
+LEFT JOIN [dbo].[Period] prd ON prd.asofdate = piv.ValuationDate
+CROSS APPLY (
+	SELECT dbo.fnFXRate(gpf.LocalCurrencyCode, p.LocalCurrencyCode, piv.ValuationDate) AS FxRate
+	) AS ComputedValues

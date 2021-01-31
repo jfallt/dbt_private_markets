@@ -1,18 +1,19 @@
 {{ config(materialized='table') }}
 SELECT p.PortfolioInvestmentId
-	,mr.CashFlowValuationDate as CashFlowDate
-	,mr.FundingClient
-	,mr.AdditionalFeesClient
-	,mr.CashDistributionsClient
-	,mr.StockDistributionsClient
-	,mr.AmountRecallableClient
-	,mr.FundingLocal
-	,mr.AdditionalFeesLocal
-	,mr.CashDistributionsLocal
-	,mr.StockDistributionsLocal
-	,mr.AmountRecallableLocal
+	,CONVERT(DATE, mr.CashFlowValuationDate) AS CashFlowDate
+	,CONVERT(MONEY, mr.FundingClient) AS FundingClient
+	,CONVERT(MONEY, mr.AdditionalFeesClient) AS AdditionalFeesClient
+	,CONVERT(MONEY, mr.CashDistributionsClient) AS CashDistributionsClient
+	,CONVERT(MONEY, mr.StockDistributionsClient) AS StockDistributionsClient
+	,CONVERT(MONEY, mr.AmountRecallableClient) AS AmountRecallableClient
+	,CONVERT(MONEY, mr.FundingLocal) AS FundingLocal
+	,CONVERT(MONEY, mr.AdditionalFeesLocal) AS AdditionalFeesLocal
+	,CONVERT(MONEY, mr.CashDistributionsLocal) AS CashDistributionsLocal
+	,CONVERT(MONEY, mr.StockDistributionsLocal) AS StockDistributionsLocal
+	,CONVERT(MONEY, mr.AmountRecallableLocal) AS AmountRecallableLocal
+	,p.Exclude
 FROM [ETL].[ManagerReport] mr
-INNER JOIN dbo.PortfolioInvestment p ON p.[InvestmentGUID] = mr.[InvestmentGUID]
+INNER JOIN {{ref('PortfolioInvestment')}} p ON p.[InvestmentGUID] = mr.[InvestmentGUID]
 WHERE mr.OrganizationType = 'Partnership'
 	AND (
 		NOT (
