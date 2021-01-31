@@ -16,8 +16,8 @@ AS (
 			,u.[EntityGUID] ORDER BY [ReportDateRange] DESC
 			) AS rn
 	FROM [ETL].[CompanyReport] AS u
-	LEFT JOIN dbo.GPFund AS f ON f.OrgGUID = u.OrganizationGUID
-	LEFT JOIN dbo.Entity AS e ON e.EntityGUID = u.EntityGUID
+	LEFT JOIN {{ref('GPFund')}} AS f ON f.OrgGUID = u.OrganizationGUID
+	LEFT JOIN {{ref('Entity')}} AS e ON e.EntityGUID = u.EntityGUID
 	WHERE u.[EntityGUID] IS NOT NULL
 	)
 

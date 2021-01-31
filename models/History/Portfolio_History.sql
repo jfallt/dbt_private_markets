@@ -3,6 +3,6 @@ select PortfolioId
 	,[EffectiveDate]
 	,[CommitmentAmountLocal]
 	,[AdjustedCommitmentAmountLocal]
-from [dbo].[CommitmentHistoryProcessed]
+from {{ref('CommitmentHistoryProcessed')}}
 where Portfolio = Investment
 and PortfolioId is not null

@@ -12,10 +12,10 @@ AS (
 			,ph.GPFundId
 			,AsOfDate ORDER BY [EffectiveDate] DESC
 			) AS rn
-	FROM [dbo].[PortfolioInvestment_History] ph
+	FROM {{ref('PortfolioInvestment_History')}} ph
 	CROSS APPLY (
 		SELECT *
-		FROM [dbo].[Period] pd
+		FROM {{ref('Period')}} pd
 		WHERE ph.EffectiveDate <= pd.[AsOfDate]
 		) AS TimePeriod
 	)

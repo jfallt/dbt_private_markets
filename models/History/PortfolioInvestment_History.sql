@@ -7,8 +7,8 @@ select p.PortfolioInvestmentID
 	,EffectiveDate
 	,CommitmentAmountLocal
 	,AdjustedCommitmentAmountLocal
-from [dbo].[CommitmentHistoryProcessed] ch
-left join [dbo].[PortfolioInvestment] p
+from {{ref('CommitmentHistoryProcessed')}} ch
+left join {{ref('PortfolioInvestment)'}} p
 	on p.PortfolioID = ch.PortfolioId
 	and p.GPFundID = ch.GPFundId
 where Portfolio <> Investment

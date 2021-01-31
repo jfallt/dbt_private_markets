@@ -12,7 +12,7 @@ SELECT p.PortfolioId
 	,mr.StockDistributionsLocal
 	,mr.AmountRecallableLocal
 FROM [ETL].[ManagerReport] mr
-INNER JOIN dbo.Portfolio p ON p.[ServiceProviderName] = mr.[FLAGFundName]
+INNER JOIN {{ref('Portfolio')}} p ON p.[ServiceProviderName] = mr.[FLAGFundName]
 WHERE mr.OrganizationType = 'Partnership'
 	AND (
 		NOT (

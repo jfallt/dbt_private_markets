@@ -38,7 +38,6 @@ SELECT p.AsOfDate
 		ELSE 0
 		END AS IsWriteDown
 	,FIHComputations.QuarterlyChangeInGrossValueLocal
-	
 	,(fih.MarketValueLocal + fih.TotalProceedsLocal - fih.TotalCostLocal) AS GrossValueLocal
 	,pfih.MarketValueLocal AS PreviousMarketValueLocal
 	,pfih.TotalProceedsLocal AS PreviousTotalProceedsLocal
@@ -98,12 +97,12 @@ SELECT p.AsOfDate
 		ELSE 'X'
 		END AS ShortStatus
 	,FIHComputations.CurrentQuarterIsZero
-FROM dbo.GPFundInvestment AS fi
-INNER JOIN dbo.GPFundInvestment_History AS fih ON fih.GPFundInvestmentId = fi.GPFundInvestmentId
-INNER JOIN [dbo].[GPFund] AS f ON f.GPFundId = fi.GPFundId
-INNER JOIN [dbo].[Entity] e ON e.EntityID = fi.EntityId
-INNER JOIN dbo.[Period] p ON p.PeriodId = fih.PeriodId
-LEFT JOIN [dbo].[GPFundInvestment_History] pfih ON fih.GpFundInvestmentId = pfih.GpFundInvestmentId
+FROM {{ref('GPFundInvestment')}} AS fi
+INNER JOIN {{ref('GPFundInvestment_History')}} AS fih ON fih.GPFundInvestmentId = fi.GPFundInvestmentId
+INNER JOIN {{ref('GPFund')}} AS f ON f.GPFundId = fi.GPFundId
+INNER JOIN {{ref('Entity')}} e ON e.EntityID = fi.EntityId
+INNER JOIN {{ref('Period')}} p ON p.PeriodId = fih.PeriodId
+LEFT JOIN {{ref('GPFundInvestment_History')}} pfih ON fih.GpFundInvestmentId = pfih.GpFundInvestmentId
 	AND fih.periodid - 1 = pfih.periodid
 CROSS APPLY (
 	SELECT CASE 
