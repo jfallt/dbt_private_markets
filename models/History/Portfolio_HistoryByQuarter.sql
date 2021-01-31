@@ -1,3 +1,4 @@
+-- Sum results of portfolio investment history by quarter to the portfolio level
 SELECT shortname
 	,sum(commitmentamountlocal) AS CommitmentAmountLocal
 	,sum(adjustedcommitmentamountlocal) AS AdjustedCommitmentAmountLocal
@@ -11,9 +12,9 @@ FROM (
 		,p.ShortName
 		,CONVERT(MONEY, pih.[CommitmentAmountLocal] / FxRate) AS [CommitmentAmountClient]
 		,CONVERT(MONEY, pih.[AdjustedCommitmentAmountLocal] / FxRate) AS AdjustedCommitmentAmountClient
-	FROM [dbo].[PortfolioInvestment_HistoryByQuarter] pih
-	LEFT JOIN GPFund gpf ON gpf.GPFundID = pih.gpfundid
-	LEFT JOIN Portfolio p ON p.PortfolioID = pih.portfolioId
+	FROM {{ref('PortfolioInvestment_HistoryByQuarter')}} pih
+	LEFT JOIN {{ref('GPFund')}} gpf ON gpf.GPFundID = pih.gpfundid
+	LEFT JOIN {{ref('Portfolio')}} p ON p.PortfolioID = pih.portfolioId
 	CROSS APPLY (
 		SELECT dbo.fnFXRate(gpf.LocalCurrencyCode, p.LocalCurrencyCode, asofdate) AS FxRate
 		) AS ComputedValues
@@ -21,7 +22,6 @@ FROM (
 	) a
 GROUP BY shortname
 	,asofdate
-
 
 /*WITH CommitByQuarter as
 (

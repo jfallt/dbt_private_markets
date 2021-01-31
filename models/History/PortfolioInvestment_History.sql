@@ -8,7 +8,7 @@ select p.PortfolioInvestmentID
 	,CommitmentAmountLocal
 	,AdjustedCommitmentAmountLocal
 from {{ref('CommitmentHistoryProcessed')}} ch
-left join {{ref('PortfolioInvestment)'}} p
+left join {{ref('PortfolioInvestment')}} p
 	on p.PortfolioID = ch.PortfolioId
 	and p.GPFundID = ch.GPFundId
 where Portfolio <> Investment
