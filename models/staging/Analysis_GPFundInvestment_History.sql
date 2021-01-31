@@ -14,11 +14,7 @@ SELECT p.AsOfDate
 			THEN fih.TotalCostLocal
 		ELSE 0
 		END AS TotalNewInvestmentsLocal
-	,CASE FIHComputations.IsNewInvestmentForQuarter
-		WHEN 1
-			THEN fih.TotalCostLocal
-		ELSE 0
-		END AS TotalNewInvestmentsLocal
+	-- Note: this needs to be recalculated with the client currency so new investment treatment is consistent across gross/net
 	,CASE 
 		WHEN FIHComputations.IsNewInvestmentForQuarter = 0
 			AND ABS(FIHComputations.QuarterlyChangeInTotalCostLocal) > 10
@@ -36,25 +32,13 @@ SELECT p.AsOfDate
 			THEN 1
 		ELSE 0
 		END AS IsWriteUp
-	,CASE 
+	,CASE
 		WHEN FIHComputations.QuarterlyChangeInGrossValueLocal < 0
 			THEN 1
 		ELSE 0
 		END AS IsWriteDown
 	,FIHComputations.QuarterlyChangeInGrossValueLocal
-	-- Note: always comparing the Client (USD) amount to the threshold, so new investment treatment is consistent across gross/net
-	,CASE 
-		WHEN FIHComputations.IsNewInvestmentForQuarter = 0
-			AND (
-				ABS(FIHComputations.QuarterlyChangeInTotalCostLocal) > 10
-				OR (
-					FIHComputations.CurrentQuarterIsZero = 1
-					AND FIHComputations.PreviousQuarterIsZero = 0
-					)
-				)
-			THEN FIHComputations.QuarterlyChangeInTotalCostLocal
-		ELSE 0
-		END AS TotalFollowOnInvestmentsLocal
+	
 	,(fih.MarketValueLocal + fih.TotalProceedsLocal - fih.TotalCostLocal) AS GrossValueLocal
 	,pfih.MarketValueLocal AS PreviousMarketValueLocal
 	,pfih.TotalProceedsLocal AS PreviousTotalProceedsLocal
