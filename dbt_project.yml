@@ -34,5 +34,5 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   private_markets:
     dimensions:
-      +schema: dim
       +materialized: table
+      +schema: dim
