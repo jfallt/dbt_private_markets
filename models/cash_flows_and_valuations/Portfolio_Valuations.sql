@@ -2,7 +2,7 @@
 
 -- Treat records with a non zero valuation OR all Zeros (valuations and cash flows) as valuations
 SELECT p.PortfolioID
-	,mr.CashFlowValuationDate
+	,CONVERT(date, mr.CashFlowValuationDate) as CashFlowValuationDate
 	,CONVERT(money, mr.ReportedValuationLocal) as ReportedValuationLocal
 FROM [ETL].[ManagerReport] mr
 INNER JOIN {{ref('Portfolio')}} p ON p.[ServiceProviderName] = mr.[FLAGFundName]

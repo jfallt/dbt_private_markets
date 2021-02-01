@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+{{config(materialized = 'table')}}
 WITH reporting_dates
 AS (
 	SELECT DISTINCT cast([ReportDateRange] AS DATE) AS AsOfDate
