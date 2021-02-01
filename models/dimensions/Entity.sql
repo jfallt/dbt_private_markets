@@ -1,4 +1,4 @@
-{{ config(materialized = 'table') }}
+{{config(materialized = 'table')}}
 WITH entities_rn AS (
 		SELECT [EntityGUID]
 			,[EntityName]

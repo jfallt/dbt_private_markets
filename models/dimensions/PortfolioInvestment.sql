@@ -1,19 +1,19 @@
-{{ config(materialized='table') }}
+{{config(materialized = 'table')}}
 
 SELECT DISTINCT HASHBYTES('MD5', [InvestmentGUID]) AS PortfolioInvestmentID
 	,mr.InvestmentGUID
 	,mr.GlobalIdentifier
 	,p.PortfolioID
 	,gpf.GPFundID
-	,mr.Secondary
-	,mr.Liquidated
-	,mr.LiquidationDate
+	,CONVERT(BIT, mr.Secondary) AS Secondary
+	,CONVERT(BIT, mr.Liquidated) AS Liquidated
+	,CONVERT(DATE, mr.LiquidationDate) AS LiquidationDate
 	,CONVERT(BIT, 0) AS Exclude
 	,CONVERT(BIT, 0) AS SoldPartnership
-	,NULL as SoldDate
-	,mr.ClosingDate
+	,NULL AS SoldDate
+	,CONVERT(DATE, mr.ClosingDate) AS ClosingDate
 	,mr.InvestmentName
-	,mr.VintageYear
+	,CONVERT(SMALLINT, mr.VintageYear) AS VintageYear
 	,mr.[InvestmentType]
 FROM [ETL].[ManagerReport] AS mr
 INNER JOIN {{ref('Portfolio')}} p ON p.[ShortName] = mr.[ShortName]

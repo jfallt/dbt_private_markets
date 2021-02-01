@@ -1,4 +1,13 @@
 {{ config(materialized='table') }}
+{{ 
+    config(
+      {"materialized":"table",
+		"pre-hook": "{{ drop_all_indexes_on_table() }}",
+      "post-hook": [
+         "{{ create_nonclustered_index(columns = ['PortfolioInvestmentId', 'ValuationDate']) }}"
+	 ]
+    }) 
+}}
 
 -- Treat records with a non zero valuation OR all Zeros (valuations and cash flows) as valuations
 WITH portfolioInvestmentValuations
@@ -6,7 +15,7 @@ AS (
 	SELECT p.PortfolioInvestmentId
 		,p.GPFundID
 		,p.PortfolioID
-		,mr.CashFlowValuationDate AS ValuationDate
+		,CONVERT(DATE, mr.CashFlowValuationDate) AS ValuationDate
 		,CONVERT(MONEY, mr.ReportedValuationLocal) AS ReportedValuationLocal
 	FROM [ETL].[ManagerReport] mr
 	INNER JOIN {{ref('PortfolioInvestment')}}  p ON p.[InvestmentGUID] = mr.[InvestmentGUID]
@@ -37,9 +46,9 @@ SELECT piv.PortfolioInvestmentID
 		ELSE CONVERT(BIT, 1)
 		END AS IsReportingPeriod
 FROM portfolioInvestmentValuations piv
-INNER JOIN dbo.GPFund gpf ON gpf.GPFundID = piv.GPFundID
-INNER JOIN dbo.Portfolio p ON p.PortfolioID = piv.PortfolioID
-LEFT JOIN [dbo].[Period] prd ON prd.asofdate = piv.ValuationDate
+INNER JOIN {{ref('GPFund')}} gpf ON gpf.GPFundID = piv.GPFundID
+INNER JOIN {{ref('Portfolio')}} p ON p.PortfolioID = piv.PortfolioID
+LEFT JOIN {{ref('Period')}} prd ON prd.asofdate = piv.ValuationDate
 CROSS APPLY (
 	SELECT dbo.fnFXRate(gpf.LocalCurrencyCode, p.LocalCurrencyCode, piv.ValuationDate) AS FxRate
 	) AS ComputedValues
