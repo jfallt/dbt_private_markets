@@ -17,8 +17,12 @@ AS (
 		,p.PortfolioID
 		,CONVERT(DATE, mr.CashFlowValuationDate) AS ValuationDate
 		,CONVERT(MONEY, mr.ReportedValuationLocal) AS ReportedValuationLocal
+		,ROW_NUMBER() OVER (
+			PARTITION BY mr.InvestmentGUID
+			,CashFlowValuationDate ORDER BY ReportedValuationLocal DESC
+			) AS rn
 	FROM [ETL].[ManagerReport] mr
-	INNER JOIN {{ref('PortfolioInvestment')}}  p ON p.[InvestmentGUID] = mr.[InvestmentGUID]
+	INNER JOIN {{ref('PortfolioInvestment') }} p ON p.[InvestmentGUID] = mr.[InvestmentGUID]
 	WHERE mr.OrganizationType = 'Partnership'
 		AND mr.ReportedValuationLocal <> 0
 		OR (
@@ -46,9 +50,10 @@ SELECT piv.PortfolioInvestmentID
 		ELSE CONVERT(BIT, 1)
 		END AS IsReportingPeriod
 FROM portfolioInvestmentValuations piv
-INNER JOIN {{ref('GPFund')}} gpf ON gpf.GPFundID = piv.GPFundID
-INNER JOIN {{ref('Portfolio')}} p ON p.PortfolioID = piv.PortfolioID
-LEFT JOIN {{ref('Period')}} prd ON prd.asofdate = piv.ValuationDate
+INNER JOIN {{ref('GPFund') }} gpf ON gpf.GPFundID = piv.GPFundID
+INNER JOIN {{ref('Portfolio') }} p ON p.PortfolioID = piv.PortfolioID
+LEFT JOIN {{ref('Period') }} prd ON prd.asofdate = piv.ValuationDate
 CROSS APPLY (
 	SELECT dbo.fnFXRate(gpf.LocalCurrencyCode, p.LocalCurrencyCode, piv.ValuationDate) AS FxRate
 	) AS ComputedValues
+WHERE rn = 1
