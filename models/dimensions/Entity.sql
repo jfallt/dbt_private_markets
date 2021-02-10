@@ -1,4 +1,4 @@
-{{config(materialized = 'table')}}
+{{config(materialized = 'table') }}
 WITH entities_rn AS (
 		SELECT [EntityGUID]
 			,[EntityName]
@@ -18,8 +18,8 @@ WITH entities_rn AS (
 							,500
 							)
 						)
-					THEN CONVERT(bit, 0)
-				ELSE CONVERT(bit, 1)
+					THEN CONVERT(BIT, 0)
+				ELSE CONVERT(BIT, 1)
 				END AS IsInvestable
 			,[IndustryICBIndustry]
 			,[IndustryVEIC10Category]
@@ -34,7 +34,15 @@ WITH entities_rn AS (
 			,ROW_NUMBER() OVER (
 				PARTITION BY [EntityGUID] ORDER BY [ReportDateRange] DESC
 				) AS rn
-		FROM [ETL].[CompanyReport]
+		FROM (
+			SELECT *
+			FROM [ETL].[CompanyReport]
+			
+			UNION
+			
+			SELECT *
+			FROM etl.CompanyReportCurrent
+			) a
 		WHERE [EntityGUID] IS NOT NULL
 		)
 

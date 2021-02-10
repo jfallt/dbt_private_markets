@@ -4,8 +4,7 @@
       {"materialized":"table",
 		"pre-hook": "{{ drop_all_indexes_on_table() }}",
       "post-hook": [
-         "{{ create_nonclustered_index(columns = ['PortfolioInvestmentId', 'AsOfDate']) }}",
-		 "{{ create_nonclustered_index(columns = ['PortfolioInvestmentId', 'AsOfDate', 'GPFundID', 'PortfolioId']) }}"
+         "{{ create_nonclustered_index(columns = ['PortfolioInvestmentId', 'AsOfDate']) }}"
 	 ]
     }) 
 }}
@@ -32,7 +31,7 @@ AS (
 	FROM Period pd
 	CROSS APPLY (
 		SELECT *
-		FROM stg_PortfolioInvestment_CommitmentHistory
+		FROM {{ref('stg_PortfolioInvestment_CommitmentHistory')}}
 		) AS ph
 	WHERE ph.EffectiveDate <= pd.[AsOfDate]
 	)
@@ -52,10 +51,10 @@ CROSS APPLY (
 	) AS ComputedValues
 CROSS APPLY (
 	-- valuation dates
-	SELECT piv.ValuationDate AS LatestValuationDate
-	FROM {{ref('PortfolioInvestment_Valuations')}} AS piv
+	SELECT MAX(piv.ValuationDate) AS LatestValuationDate
+	FROM PortfolioInvestment_Valuations AS piv
 	WHERE piv.PortfolioInvestmentId = cbq.PortfolioInvestmentId
-		AND piv.ValuationDate = cbq.AsOfDate
+		AND piv.ValuationDate <= cbq.AsOfDate
 	) AS PIvaluationData
 OUTER APPLY dbo.fnPortfolioInvestmentCashFlowData(cbq.PortfolioInvestmentId, PIvaluationData.LatestValuationDate) AS PICFD -- cash flow data
 CROSS APPLY (
