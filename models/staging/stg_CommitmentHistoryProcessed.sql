@@ -1,13 +1,24 @@
+WITH investmentGUID
+AS (
+	SELECT DISTINCT [GroupBy1] AS Portfolio
+		,investment
+		,GlobalIdentifier
+	FROM [ETL].[CommitmentListWithGUID]
+	WHERE globalidentifier IS NOT NULL
+	)
 SELECT isnull(ff1.PortfolioId, ff2.PortfolioId) AS PortfolioId
 	--,isnull(ff1.ServiceProviderName, ff2.ServiceProviderName) AS ServiceProviderName
-	,COALESCE(gpf.GPFundID, gpf2.GPFundID) AS GPFundId
+	,COALESCE(poi.GPFundID, gpf.GPFundID, gpf2.GPFundID) AS GPFundId
 	,ch.Portfolio
 	,ch.Investment
-	,CAST(ch.[EffectiveDate] as DATE) as EffectiveDate
-	,CONVERT(money, ch.[CommitmentAmountLocal]) as [CommitmentAmountLocal]
-	,CONVERT(money, ch.[AdjustedCommitmentAmountLocal]) as [AdjustedCommitmentAmountLocal]
+	,CAST(ch.[EffectiveDate] AS DATE) AS EffectiveDate
+	,CONVERT(MONEY, ch.[CommitmentAmountLocal]) AS [CommitmentAmountLocal]
+	,CONVERT(MONEY, ch.[AdjustedCommitmentAmountLocal]) AS [AdjustedCommitmentAmountLocal]
 	,ch.[LocalCurrency]
 FROM [ETL].CommitmentHistory ch
+LEFT JOIN investmentGUID ig ON ig.Portfolio = ch.Portfolio
+	AND ig.investment = ch.Investment
+LEFT JOIN {{ref('PortfolioInvestment')}} poi ON poi.GlobalIdentifier = ig.GlobalIdentifier
 LEFT JOIN {{ref('Portfolio')}} ff1 ON ff1.ServiceProviderName = ch.Portfolio
 LEFT JOIN (
 	SELECT DISTINCT FlagFundName
