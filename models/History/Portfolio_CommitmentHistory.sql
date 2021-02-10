@@ -1,5 +1,6 @@
 -- Sum results of portfolio investment history by quarter to the portfolio level
 SELECT p.PortfolioID
+	,asofdate
 	,sum(EffectiveCommitmentAmountLocal) AS CommitmentAmountLocal
 	,sum(EffectiveAdjustedCommitmentAmountLocal) AS AdjustedCommitmentAmountLocal
 	,sum(EffectiveCommitmentAmountClient) AS [CommitmentAmountClient]
