@@ -8,7 +8,7 @@ AS (
 	)
 SELECT isnull(ff1.PortfolioId, ff2.PortfolioId) AS PortfolioId
 	--,isnull(ff1.ServiceProviderName, ff2.ServiceProviderName) AS ServiceProviderName
-	,COALESCE(poi.GPFundID, gpf.GPFundID, gpf2.GPFundID) AS GPFundId
+	,COALESCE(poi.GPFundID, gpf.GPFundID, gpf2.GPFundID, gpf3.GPFundID) AS GPFundId
 	,ch.Portfolio
 	,ch.Investment
 	,CAST(ch.[EffectiveDate] AS DATE) AS EffectiveDate
@@ -26,12 +26,19 @@ LEFT JOIN (
 	FROM [ETL].[ManagerReport]
 	) b ON b.FlagFundName = ch.Portfolio
 	AND ff1.ServiceProviderName IS NULL
-LEFT JOIN {{ref('Portfolio')}} ff2 ON ff2.ShortName = b.ShortName
-LEFT JOIN {{ref('GPFund')}} gpf ON gpf.ServiceProviderName = ch.Investment
+LEFT JOIN Portfolio ff2 ON ff2.ShortName = b.ShortName
+LEFT JOIN GPFund gpf ON gpf.ServiceProviderName = ch.Investment
 LEFT JOIN (
 	SELECT DISTINCT OrgGuid
 		,FundName
 	FROM [ETL].[ManagerReport]
 	) b2 ON b2.FundName = ch.Investment
 	AND gpf.GPFundID IS NULL
+LEFT JOIN (
+	SELECT DISTINCT OrgGuid
+		,InvestmentName
+	FROM [ETL].[ManagerReport]
+	) b3 ON b3.InvestmentName = ch.Investment
+	AND gpf.GPFundID IS NULL
 LEFT JOIN {{ref('GPFund')}} gpf2 ON gpf2.OrgGuid = b2.OrgGUID
+LEFT JOIN {{ref('GPFund')}} gpf3 ON gpf3.OrgGuid = b3.OrgGUID
