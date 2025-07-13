@@ -1,1 +1,1 @@
-This was a dbt project for private markets data
+This was a dbt project for private markets data (archived)
